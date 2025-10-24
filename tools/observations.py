@@ -15,21 +15,54 @@ def get_astroquery_version():
     return f"astroquery version: {__version__}"
 
 
+# --- Tool: List available missions ---
+@mcp.tool(
+    title="List Available MAST Missions",
+    description="List all data missions archived by MAST and available through astroquery.",
+)
+async def list_mast_missions() -> str:
+    """List all available MAST missions."""
+    missions = Observations.list_missions()
+    return f"Available MAST missions:\n{', '.join(missions)}"
+
+
+# --- Tool: Get MAST metadata ---
+@mcp.tool(
+    title="Get MAST Metadata",
+    description="Get metadata about MAST observations or products.",
+)
+async def get_mast_metadata(data_type: str) -> str:
+    """Get MAST metadata for observations or products.
+    
+    Parameters
+    ----------
+    data_type : str
+        Type of metadata to retrieve: 'observations' or 'products'
+    """
+    meta_table = Observations.get_metadata(data_type)
+    lines = [f"{row['Column Name']}: {row['Column Label']}" for row in meta_table[:10]]
+    text_output = f"Metadata fields for {data_type}:\n"
+    text_output += "\n".join(lines)
+    return text_output
+
+
 # --- Tool: Query observations ---
 @mcp.tool(
     title="Query MAST Observations",
-    description="Query MAST observations for a specified target and radius.",
+    description="Query MAST observations for a specified target and/or any additional criteria.",
 )
 async def mast_observation_query(
-    target: str,
+    target: str = "",
     radius: str = "0.02 deg",
     mission_name: str = None,
     dataproduct_type: str = None,
     instrument_name: str = None,
     filters: str = None,
     hlsp_name: str = None,
+    proposal_id: str = None,
+    wavelength_region: str = None,
 ) -> str:
-    """Query MAST observations for specified target.
+    """Query MAST observations for for specified target or by criteria.
 
     Parameters
     ----------
@@ -47,6 +80,10 @@ async def mast_observation_query(
         Astronomical filters to search on (optional).
     hlsp_name : str, optional
         Filter by High-Level Science Product name. Also known as provenance_name (optional).
+    proposal_id : str, optional
+        Filter by proposal ID (optional).
+    wavelength_region : str, optional
+        Filter by wavelength region (optional).
     """
 
     kwargs = {}
@@ -67,18 +104,57 @@ async def mast_observation_query(
         kwargs["dataproduct_type"] = dataproduct_type
     if hlsp_name is not None and hlsp_name != "":
         kwargs["provenance_name"] = hlsp_name
+    if proposal_id is not None and proposal_id != "":
+        kwargs["proposal_id"] = proposal_id
+    if wavelength_region is not None and wavelength_region != "":
+        kwargs["wavelength_region"] = f"*{wavelength_region}*"
 
     # The actual query
-    obs_table = Observations.query_criteria(
-        objectname=target,
-        radius=radius,
-        **kwargs,
-    )
+    if len(kwargs) == 0:
+        obs_table = Observations.query_object(target, radius=radius)
+    elif target == "":
+        # If no target, use query_criteria only
+        obs_table = Observations.query_criteria(**kwargs)
+    else:
+        # Use query_criteria with additional filters
+        obs_table = Observations.query_criteria(
+            objectname=target,
+            radius=radius,
+            **kwargs,
+        )
 
     if len(obs_table) == 0:
         return f"No observations found for target: {target} within radius: {radius}"
+    
+    # Only consider some columns
+    col_list = [
+        "obs_id",
+        "obs_collection",
+        "dataproduct_type",
+        "instrument_name",
+        "filters",
+        "t_exptime",
+        "s_ra",
+        "s_dec",
+        "obs_title",
+        "wavelength_region",
+        "target_name",
+        "target_classification",
+        "proposal_id",
+    ]
+    obs_table = obs_table[col_list]
 
     print(f"Found {len(obs_table)} observations for target: {target}")
+
+    # Return full table if results are 100 or fewer
+    if len(obs_table) <= 100:
+        text_table = obs_table.pformat(max_lines=-1, max_width=-1)
+        text_table = "\n".join(text_table)
+        text_output = f"Found {len(obs_table)} observations found for target: {target} within radius: {radius}:\n"
+        text_output += text_table
+        return text_output
+
+    # Make a summary count by mission if more than 100 results
 
     # Group by obs_collection and count
     obs_collections = obs_table["obs_collection"]
