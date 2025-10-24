@@ -1,4 +1,4 @@
-# Prototype for MAST MCP server
+# Prototype for Observations MCP
 
 from collections import Counter
 

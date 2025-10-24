@@ -1,3 +1,4 @@
+# Prototype for MAST MCP server
 # Main file to organize all the tools
 
 from tools import observations, exomast
