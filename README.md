@@ -1,15 +1,14 @@
 # mast-mcp-prototype
 MAST MCP Prototype
 
-Install requirements (eg, `pip install .`) then run: 
-```bash
-fastmcp run mast.py
-```
-
+Install requirements (eg, `pip install .`) for the app.   
 You will need to have `uv` installed for clients to access it. You can do this with `brew install uv`
 
-To best use it, you will want to add it to a client, use the `fastmcp install` commands.  
-For example, `fastmcp install cursor mast.py -n MAST-MCP`.  
+You can test it with `fastmcp run mast.py` but to best use it you want to install it to a client.   
+To do this, use the `fastmcp install` commands. For example: 
+```bash
+fastmcp install cursor mast.py -n MAST-MCP
+```
 
 For VSCode you may need to produce the mcp-json format, which may look something like:
 ```json
@@ -24,8 +23,6 @@ For VSCode you may need to produce the mcp-json format, which may look something
       "astroquery",
       "--with",
       "fastmcp",
-      "--with-editable",
-      "C:\\Users\\strak\\Projects\\mast-mcp-prototype",
       "fastmcp",
       "run",
       "C:\\Users\\strak\\Projects\\mast-mcp-prototype\\mast.py"
