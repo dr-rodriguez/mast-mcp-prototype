@@ -1,6 +1,13 @@
 # MAST MCP Prototype
 
-Install requirements (eg, `pip install .`) for the app.   
+## What is MCP?
+
+MCP (Model Context Protocol) is a protocol for building AI agents that can access external tools and data sources. 
+We are using [FastMCP](https://gofastmcp.com/getting-started/welcome) to build a few simple calls to the MAST Archive..
+
+## Setup
+
+Install requirements (eg, `uv sync`) for the app.   
 You will need to have `uv` installed for clients to access it. You can do this with `brew install uv`.
 
 You can test it with `fastmcp run mast.py` but to best use it you want to install it to a client.   
@@ -27,4 +34,26 @@ For VSCode you may need to produce the mcp-json format, which may look something
     ]
   }
 }
+```
+
+## Example
+
+Get the properties of a given exoplanet by name:
+```
+What is the orbital separation for exoplanet HR-8799b?
+```
+
+Generate prompt to summarize the properties after fetching them (exact call will vary depending on the client):
+```
+/MAST-MCP/Summarize exoplanet properties 
+```
+
+Get observations for a given target:
+```
+What observations exist in MAST for V4046 Sgr? Use a radius of 0 degrees.
+```
+
+Get product list for a given observation:
+```
+What products exist in MAST for TW Hya? Use a radius of 0 degrees and only consider HST observations using the COS instrument.
 ```
