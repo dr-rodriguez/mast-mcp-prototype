@@ -16,19 +16,19 @@ def get_exomast_version():
     return "ExoMAST API v0.1"
 
 
-@mcp.tool(title="Search for an exoplanet by its name", description="Search for an exoplanet by its name")
-async def search_exoplanet_by_name(
+@mcp.tool(title="Search for an exoplanet by its name and get properties", description="Search for an exoplanet by its name and get properties")
+async def search_exoplanet_properties(
     name: str,
 ) -> str:
-    """Search for an exoplanet by its name"""
+    """Search for an exoplanet by its name and get properties"""
 
-    # Get planet identifiers
+    # Step 1: Get planet identifiers
     url = f"{HTTP_ROOT}/api/v0.1/exoplanets/identifiers/?name={urllib.parse.quote(name)}"
     response = requests.get(url)
     response.raise_for_status()
     identifiers = response.json()
 
-    # Get the canonical name, if present
+    # Step 2: Get the canonical name, if present
     canonical_name = identifiers.get("canonicalName")
     if canonical_name is None:
         canonical_name = name
@@ -43,38 +43,24 @@ async def search_exoplanet_by_name(
     url = f"{HTTP_ROOT}/api/v0.1/exoplanets/resolver/{urllib.parse.quote(canonical_name)}"
     response = requests.get(url, params=params)
     response.raise_for_status()
+    data = response.json()
+
+    # Extract the exoplanetID from the data
+    if len(data) == 0 or len(data[0]) == 0:
+        yaml_data = yaml.dump(data)
+        return f"Error fetching exoplanet with name: {name}.\nData: {yaml_data}"
+    else:
+        exoplanet_id = data[0].get("exoplanetID")
+
+    # Step 3: Get the exoplanet properties
+    url = f"{HTTP_ROOT}/api/v0.1/exoplanets/{exoplanet_id}/properties"
+    response = requests.get(url, params=params)
+    response.raise_for_status()
 
     # Convert json to yaml
     result_yaml = yaml.dump(response.json())
 
     return result_yaml
-
-
-@mcp.tool(title="Get exoplanet properties", description="Get exoplanet properties for a given exoplanet ID")
-async def get_exoplanet_properties(
-    exoplanet_id: str,
-    flatten_response: bool = False,
-    format: Optional[str] = None,
-    delimiter: Optional[str] = None,
-    raw: bool = False,
-    include_info: bool = False
-) -> str:
-    """Get exoplanet properties for a given exoplanet ID"""
-    params = {
-        "flatten_response": flatten_response,
-        "raw": raw,
-        "include_info": include_info
-    }
-    if format:
-        params["format"] = format
-    if delimiter:
-        params["delimiter"] = delimiter
-    
-    url = f"{HTTP_ROOT}/api/v0.1/exoplanets/{urllib.parse.quote(exoplanet_id)}/properties"
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    return str(response.json())
-
 
 @mcp.prompt("Summarize-exoplanet-properties")
 async def summarize_exoplanet_properties() -> str:
