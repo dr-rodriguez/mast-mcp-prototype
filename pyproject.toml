@@ -9,3 +9,11 @@ dependencies = [
     "fastmcp>=2.12.5",
     "astroquery>=0.4.11",
 ]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
