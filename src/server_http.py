@@ -3,7 +3,6 @@
 # Streamable HTTP version
 
 from src import observations, exomast
-from starlette.responses import JSONResponse
 from fastmcp import FastMCP
 from fastapi import FastAPI
 
@@ -13,7 +12,8 @@ mcp = FastMCP(name="MAST MCP")
 mcp.mount(observations.mcp)
 mcp.mount(exomast.mcp)
 
-mcp_app = mcp.http_app(path="/mcp")
+# Root path here since the /mcp path is set below
+mcp_app = mcp.http_app(path="/")
 
 # ---------
 # API
