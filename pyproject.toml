@@ -8,6 +8,7 @@ dependencies = [
     "rpds-py==0.27.1",
     "fastmcp>=2.12.5",
     "astroquery>=0.4.11",
+    "fastapi>=0.121.0",
 ]
 
 [build-system]
