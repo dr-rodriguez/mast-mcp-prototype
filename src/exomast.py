@@ -2,7 +2,6 @@
 
 import requests
 import urllib.parse
-from typing import Optional, Dict, Any
 from fastmcp import FastMCP
 import yaml
 

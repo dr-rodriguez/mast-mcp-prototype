@@ -36,6 +36,15 @@ For VSCode you may need to produce the mcp-json format, which may look something
 }
 ```
 
+### Streamable HTTP version
+
+If you want to use the MCP in a streamable HTTP version, you can use the `server_http.py` file.
+This will allow you to host the MCP on a web server and access it via HTTP.
+
+```bash
+uvicorn src.server_http:api --reload
+```
+
 ## Example
 
 Get the properties of a given exoplanet by name:
